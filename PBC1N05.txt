@@ -1,0 +1,113 @@
+      *----------------------------------------------------------------*00000100
+       IDENTIFICATION DIVISION.                                         00001000
+      *----------------------------------------------------------------*00002000
+       PROGRAM-ID. PBC1N05.                                             00003015
+       AUTHOR. JOSE ANTONIO FERNANDEZ.                                  00004001
+      *                                                                 00005000
+      * Este programa calcula la letra de un NIF dado                   00010015
+      *----------------------------------------------------------------*00020000
+       ENVIRONMENT DIVISION.                                            00030000
+      *----------------------------------------------------------------*00040000
+       CONFIGURATION SECTION.                                           00040100
+       INPUT-OUTPUT SECTION.                                            00040200
+       FILE-CONTROL.                                                    00040300
+                                                                        00041000
+      *----------------------------------------------------------------*00050000
+       DATA DIVISION.                                                   00051000
+      *----------------------------------------------------------------*00060000
+       FILE SECTION.                                                    00060100
+       WORKING-STORAGE SECTION.                                         00060200
+       01 WS-CONTANTES.                                                 00060300
+          05 CTE-NOMPGM             PIC X(7)  VALUE 'PBC1N05'.          00060415
+       01 WS-VARIABLES.                                                 00060913
+          05 WS-NUMEDOCU.                                               00061015
+             10 NUMEDOCU-INI        PIC X.                              00061115
+             10 NUMEDOCU-NUM        PIC X(7).                           00061215
+          05 WS-NUMEDOCU-NUM        PIC 9(8).                           00061315
+          05 AUX-NUMEDOCU-INI       PIC X.                              00061515
+          05 WS-NUMEDOCU-OUT        PIC X(9).                           00061615
+          05 WS-LETRADOCU           PIC X.                              00061715
+          05 AUX-TIPO               PIC X(3).                           00061816
+          05 AUX-QUOCIENT           PIC 9(8).                           00061916
+          05 AUX-REST               PIC 9(2).                           00062016
+          05 TBL-CODES.                                                 00062116
+             10 FILLER              PIC X(23)                           00062216
+                                    VALUE 'TRWAGMYFPDXBNJZSQVHLCKE'.    00062316
+          05 LETRA REDEFINES TBL-CODES OCCURS 23 PIC X.                 00062416
+       01 SWITCHES.                                                     00062516
+          05 SW-NUMEDOCU            PIC 9  VALUE 0.                     00062616
+             88 NUMEDOCU-OK                VALUE 0.                     00062716
+             88 NUMEDOCU-KO                VALUE 1.                     00063015
+                                                                        00066012
+      *----------------------------------------------------------------*00070000
+       PROCEDURE DIVISION.                                              00071000
+      *----------------------------------------------------------------*00080000
+           PERFORM 1000-INICIO                                          00081000
+           PERFORM 2000-PROCESS                                         00082000
+           PERFORM 3000-END                                             00083000
+           .                                                            00084000
+                                                                        00085000
+      *------------*                                                    00085100
+       1000-INICIO.                                                     00086000
+      *------------*                                                    00086100
+           INITIALIZE  WS-VARIABLES                                     00086201
+           .                                                            00089001
+                                                                        00090000
+      *------------*                                                    00091000
+       2000-PROCESS.                                                    00100000
+      *------------*                                                    00101000
+           ACCEPT WS-NUMEDOCU                                           00101115
+                                                                        00101215
+           MOVE NUMEDOCU-INI  TO AUX-NUMEDOCU-INI                       00101323
+                                                                        00101417
+           IF NUMEDOCU-INI IS NUMERIC                                   00101515
+              MOVE 'NIF'    TO AUX-TIPO                                 00101615
+              PERFORM 2100-CALCULA-LETRA-FINAL                          00101715
+           ELSE                                                         00101815
+              MOVE 'NIE'    TO AUX-TIPO                                 00101915
+              PERFORM 2050-TRANSFORMA-LETRA-INICIAL                     00102015
+              PERFORM 2100-CALCULA-LETRA-FINAL                          00102115
+           END-IF                                                       00102215
+                                                                        00102315
+           PERFORM 2300-DISPLAY-RESULTADO                               00102515
+           .                                                            00102607
+                                                                        00103007
+       2050-TRANSFORMA-LETRA-INICIAL.                                   00104015
+           EVALUATE NUMEDOCU-INI                                        00105015
+               WHEN 'X'                                                 00105115
+                    MOVE '0' TO NUMEDOCU-INI                            00105215
+               WHEN 'Y'                                                 00105315
+                    MOVE '1' TO NUMEDOCU-INI                            00105415
+               WHEN 'Z'                                                 00105515
+                    MOVE '2' TO NUMEDOCU-INI                            00105615
+               WHEN OTHER                                               00105715
+                    DISPLAY 'NIE incorrecto'                            00105815
+           END-EVALUATE.                                                00105915
+                                                                        00106015
+       2100-CALCULA-LETRA-FINAL.                                        00107015
+           MOVE WS-NUMEDOCU     TO WS-NUMEDOCU-NUM                      00108015
+                                                                        00109015
+                                                                        00110123
+           COMPUTE AUX-REST =  FUNCTION MOD(WS-NUMEDOCU-NUM 23)         00110223
+                                                                        00111018
+           ADD 1 TO AUX-REST                                            00131215
+           MOVE LETRA(AUX-REST) TO WS-LETRADOCU                         00131315
+                                                                        00131415
+           STRING AUX-NUMEDOCU-INI DELIMITED  BY SIZE                   00131520
+                  NUMEDOCU-NUM     DELIMITED  BY SIZE                   00131620
+                  WS-LETRADOCU     DELIMITED BY SIZE                    00131720
+                  INTO WS-NUMEDOCU-OUT                                  00131820
+           END-STRING                                                   00131920
+           .                                                            00132020
+                                                                        00132120
+       2300-DISPLAY-RESULTADO.                                          00132220
+            DISPLAY 'La letra del ' AUX-TIPO ' '                        00132320
+                     AUX-NUMEDOCU-INI NUMEDOCU-NUM                      00132420
+                     ' es ' WS-LETRADOCU ' : ' WS-NUMEDOCU-OUT          00132520
+            .                                                           00132620
+                                                                        00132720
+      *------------*                                                    00133015
+       3000-END.                                                        00140015
+      *------------*                                                    00150015
+           STOP RUN.                                                    00172001
+                                                                        00180000
